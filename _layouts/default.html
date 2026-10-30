@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% if page.title %}{{ page.title }} | {% endif %}{{ site.title }}</title>
+  <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
+  {% seo %}
+</head>
+<body>
+  <header class="site-header">
+    <a href="{{ '/' | relative_url }}" class="site-title">Fit<span>Lab</span></a>
+    <nav class="site-nav">
+      <a href="{{ '/' | relative_url }}" {% if page.url == '/' %}class="active"{% endif %}>Edit</a>
+      <a href="{{ '/about.html' | relative_url }}" {% if page.url contains 'about' %}class="active"{% endif %}>About</a>
+      <a href="https://www.noahpaladino.com/CritLab/" class="sibling" title="Criterium analysis">CritLab ↗</a>
+      <a href="https://www.noahpaladino.com/CrossLab/" class="sibling" title="Cyclocross analysis">CrossLab ↗</a>
+      <a href="https://www.noahpaladino.com/RouteLab/" class="sibling" title="Plan a route with eat, drink and power cues">RouteLab ↗</a>
+    </nav>
+    <div class="header-spacer"></div>
+    <button id="settings-btn" class="settings-btn" aria-label="Settings">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </header>
+
+  <main>
+    {{ content }}
+  </main>
+
+  <!-- Settings drawer -->
+  <div id="settings-modal" class="modal" style="display:none" role="dialog" aria-modal="true" aria-label="Settings">
+    <div class="modal-overlay" id="settings-overlay"></div>
+    <div class="drawer">
+      <div class="drawer-head">
+        <span>Settings</span>
+        <button id="settings-close" class="drawer-close" aria-label="Close">&#215;</button>
+      </div>
+      <div class="drawer-body">
+
+        <div class="settings-section">
+          <div class="settings-section-title">intervals.icu</div>
+          <p class="hint" id="icu-state">Not connected.</p>
+          <div class="btn-row" style="margin-top:8px">
+            <a class="btn btn-primary btn-sm" id="icu-connect-link" href="{{ '/connect.html' | relative_url }}">Connect intervals.icu</a>
+            <button class="btn btn-sm" id="icu-clear">Disconnect</button>
+          </div>
+          <div class="settings-row" style="margin-top:10px">
+            <label for="icu-persist">Keep the key</label>
+            <select id="icu-persist">
+              <option value="local">In this browser, until I remove it</option>
+              <option value="session">Only until I close this tab</option>
+            </select>
+          </div>
+          <p class="hint">
+            Optional in FitLab. The key goes only to intervals.icu, directly from your
+            browser &mdash; there is no FitLab server. It is shared with CritLab, CrossLab and RouteLab.
+          </p>
+          <div id="icu-status" class="status status-info" style="display:none"></div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">Units</div>
+          <div class="settings-row">
+            <label for="set-units">Distances</label>
+            <select id="set-units"><option value="km">Kilometres and metres</option><option value="mi">Miles and feet</option></select>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">Merging</div>
+          <div class="settings-row">
+            <label for="set-tol">A second-file sample this close counts as the same moment (s)</label>
+            <input type="number" id="set-tol" min="0" max="10" step="0.5">
+          </div>
+          <div class="settings-row">
+            <label for="set-bridge">Interpolate across second-file gaps up to (s)</label>
+            <input type="number" id="set-bridge" min="0" max="60" step="1">
+          </div>
+          <p class="hint" style="margin-top:6px">
+            Smart recording logs every few seconds; bridging fills the seconds between.
+            A longer gap is left empty rather than filled with a held value, so a
+            dropout never turns into invented watts.
+          </p>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">Getting started</div>
+          <p class="hint">A short tour of where things are.</p>
+          <div class="btn-row" style="margin-top:8px">
+            <a class="btn btn-sm" id="tour-replay" href="{{ '/' | relative_url }}?tour=1">Replay the walkthrough</a>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">Stored data</div>
+          <p class="hint">
+            FitLab keeps nothing: files live in this tab while you edit them and are
+            gone when you close it. Only the settings above and the intervals.icu key are
+            remembered, in the slots shared with the other tools.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ '/assets/js/Intervals.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/FitStore.js' | relative_url }}"></script>
+  {% if page.app %}
+  <script src="{{ '/assets/js/FitFile.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/FitEdit.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/Demo.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/Timeline.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/TrackMap.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/Tour.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/app.js' | relative_url }}"></script>
+  {% endif %}
+
+  <script>
+  /* Settings drawer — available on every page, depends only on Settings. */
+  (function () {
+    'use strict';
+
+    var $ = function (id) { return document.getElementById(id); };
+    var modal = $('settings-modal'), statusEl = $('icu-status'), persistEl = $('icu-persist');
+
+    function say(el, kind, msg) {
+      el.className = 'status status-' + kind;
+      el.textContent = msg;
+      el.style.display = '';
+    }
+    function fire(detail) { window.dispatchEvent(new CustomEvent('fitlab:settings', { detail: detail })); }
+
+    function renderIcu() {
+      var on = !!Settings.getIcuKey(), name = Settings.get('icuAthleteName');
+      $('icu-state').textContent = on ? 'Connected' + (name ? ' as ' + name : '') + '.' : 'Not connected.';
+      $('icu-connect-link').textContent = on ? 'Use a different key' : 'Connect intervals.icu';
+      $('icu-clear').style.display = on ? '' : 'none';
+    }
+
+    function open() {
+      var s = Settings.all();
+      renderIcu();
+      persistEl.value = s.icuKeyPersist || 'local';
+      $('set-units').value = s.flUnits;
+      $('set-tol').value = s.flTol;
+      $('set-bridge').value = s.flBridge;
+      statusEl.style.display = 'none';
+      modal.style.display = '';
+    }
+    function close() { modal.style.display = 'none'; }
+
+    $('settings-btn').addEventListener('click', open);
+    $('settings-close').addEventListener('click', close);
+    $('settings-overlay').addEventListener('click', close);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modal.style.display !== 'none') close();
+    });
+
+    persistEl.addEventListener('change', function () {
+      Settings.set({ icuKeyPersist: persistEl.value });
+      say(statusEl, 'info', persistEl.value === 'session'
+        ? 'The key will be dropped when you close this tab.'
+        : 'The key will be remembered in this browser.');
+    });
+
+    $('icu-clear').addEventListener('click', function () {
+      Settings.forgetIcuKey();
+      Settings.set({ icuAthlete: '', icuAthleteName: '' });
+      renderIcu();
+      say(statusEl, 'ok', 'Disconnected — the key is erased from this browser.');
+      fire({ icu: true });
+    });
+
+    function num(id, key, lo, hi) {
+      $(id).addEventListener('change', function () {
+        var v = parseFloat(this.value);
+        if (!isFinite(v)) return;
+        v = Math.max(lo, Math.min(hi, v));
+        this.value = v;
+        var patch = {}; patch[key] = v;
+        Settings.set(patch);
+        fire({ merge: true });
+      });
+    }
+    num('set-tol', 'flTol', 0, 10);
+    num('set-bridge', 'flBridge', 0, 60);
+    $('set-units').addEventListener('change', function () { Settings.set({ flUnits: this.value }); fire({ units: true }); });
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+---
+layout: default
+title: About
+---
+
+<div class="prose">
+
+<h1>About FitLab</h1>
+
+<p class="lead">
+  FitLab edits FIT activity files: it combines two recordings of the same ride
+  into one workout, and crops, pauses, cuts and splices.
+</p>
+
+<p>
+  It runs entirely in your browser. There is no FitLab server, no account, and
+  nothing is uploaded unless you press the button that uploads to intervals.icu.
+  Files live in the tab while you edit them and are gone when you close it. It is
+  a sibling of <a href="https://www.noahpaladino.com/CritLab/">CritLab</a>,
+  <a href="https://www.noahpaladino.com/CrossLab/">CrossLab</a> and
+  <a href="https://www.noahpaladino.com/RouteLab/">RouteLab</a>, and shares their
+  settings and the intervals.icu key: connect in any one of them and FitLab has it.
+</p>
+
+<h2>Two files</h2>
+
+<p>
+  The <b>base file</b> is the reference. The finished workout has its clock,
+  its laps, its session, its device and everything else it carried. The
+  <b>second file</b> is optional: it's where extra channels come from, or the
+  other half of a ride to append.
+</p>
+
+<h2>Merge</h2>
+
+<p>
+  The usual case: a head unit recorded GPS and heart rate, and something else
+  (a phone app, a trainer, a watch, a second head unit) recorded power. Merge
+  takes channels from the second file and writes them into the base file's
+  samples, matched by timestamp.
+</p>
+
+<ul>
+  <li><b>Clock offset.</b> Two devices' clocks are rarely the same to the second.
+    FitLab lines them up by cross-correlating a channel both files have (power,
+    cadence, speed or heart rate) or, when they share nothing, by when you
+    stopped and started. The second file is drawn over the base on the chart,
+    shifted by the offset, so you can check by eye and nudge a second at a time.</li>
+  <li><b>Fill gaps</b> uses the second file only where the base has no value:
+    a power meter that dropped out for a minute, filled from a backup recording.
+    <b>Replace</b> uses the second file wherever it has a value: a better heart-rate
+    strap than the one the head unit was paired to.</li>
+  <li><b>Matching.</b> A sample at the same second is taken as is. Between two
+    samples a few seconds apart (smart recording) the value is interpolated.
+    Across a longer gap nothing is written: a dropout stays a dropout, rather than
+    a held value that would put invented watts in the file. Both limits are in
+    Settings.</li>
+  <li><b>Anything goes across</b>: power, heart rate, cadence, speed, altitude,
+    GPS, temperature, pedalling dynamics, and developer fields (Stryd, CORE,
+    Moxy…), which bring their definitions with them.</li>
+</ul>
+
+<h2>Crop, pause, cut</h2>
+
+<p>Select a stretch by dragging across the chart, or type the times. Then:</p>
+
+<ul>
+  <li><b>Crop</b> keeps only the selection: a ride that was started in the car park
+    or stopped an hour after you got home.</li>
+  <li><b>Pause</b> does what auto-pause would have: the samples inside go, the
+    clock times stay, and the timer stops and starts at the edges, so moving time
+    leaves it out. The café stop you forgot to pause.</li>
+  <li><b>Cut</b> removes the stretch and moves everything after it earlier, so the
+    ride is continuous, and takes out the distance covered too (that can be
+    turned off). The lift home you forgot to stop recording.</li>
+  <li><b>Delete the samples</b> leaves a hole and changes nothing else, for a
+    stretch of garbage data.</li>
+  <li><b>Shift the clock</b> moves every timestamp, for a head unit set to the
+    wrong time or time zone.</li>
+</ul>
+
+<h2>Splice</h2>
+
+<p>
+  Splice joins the second file onto the end of the base as one workout: one
+  session, both files' laps, distance carrying on. The gap between them becomes
+  a pause, or the second file can be moved to start a set number of seconds
+  after the first ends. For a ride split in two by a flat battery or a head
+  unit that crashed and started a new activity.
+</p>
+
+<h2>More</h2>
+
+<ul>
+  <li><b>Remove channels</b>, for example GPS before sharing a file (the laps' and
+    session's start and end positions go too).</li>
+  <li><b>Clear spikes</b>: power or heart rate above a limit is blanked, not set to
+    zero, so it doesn't drag the averages down.</li>
+  <li><b>Sport</b>: change the sport and sub-sport, e.g. a ride recorded as "cycling"
+    that was gravel.</li>
+</ul>
+
+<h2>What's kept, and what's recalculated</h2>
+
+<p>
+  FitLab reads every message in the file, including the ones it has no use for,
+  and writes them all back: device information, HRV, developer fields, zones,
+  Garmin's private messages. Edits change only what they have to.
+</p>
+<p>
+  Laps and the session are rebuilt from the samples after every edit: start and
+  end times, elapsed and moving time, distance, average and maximum power, heart
+  rate, cadence and speed, normalized power, work, and (when altitude changed)
+  climbing. Totals FitLab can't recompute (training stress score, intensity
+  factor, time in zones, training effect) are removed once the samples change,
+  rather than left wrong. intervals.icu works them out again from the samples.
+</p>
+<p>
+  An untouched file is written back unchanged. Every file FitLab writes is
+  checked in its tests by Garmin's own FIT SDK.
+</p>
+
+<h2>intervals.icu</h2>
+
+<p>
+  With your API key connected, the sidebar lists your recent activities; pick
+  any one as the base or the second file. FitLab asks for the original upload,
+  which is exactly what the device wrote. If the original was a GPX or TCX, it
+  uses intervals.icu's own FIT version of the activity, which may lack device
+  details and developer fields. Activities that reached intervals.icu from
+  Strava can't be downloaded through the API (Strava's terms); upload the
+  original .fit to intervals.icu, or open it here directly.
+</p>
+<p>
+  <b>Upload to intervals.icu</b> adds the result as a new activity. If the
+  original recordings are already there, intervals.icu may see it as a
+  duplicate; delete the originals first to end up with one ride.
+</p>
+
+<h2>Privacy</h2>
+
+<p>
+  The key is stored in this browser and sent only to intervals.icu, directly from
+  your browser. Files are never sent anywhere except, when you ask, to intervals.icu.
+</p>
+
+</div>

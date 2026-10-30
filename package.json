@@ -1,0 +1,17 @@
+{
+  "name": "fitlab",
+  "version": "0.1.0",
+  "description": "Edit FIT activity files in the browser: merge two recordings, crop, cut, pause, splice",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "test": "node test/harness.js && node test/dom.js",
+    "test:unit": "node test/harness.js",
+    "test:dom": "node test/dom.js",
+    "serve": "bundle exec jekyll serve --livereload"
+  },
+  "devDependencies": {
+    "@garmin/fitsdk": "^21.218.0",
+    "jsdom": "^24.0.0"
+  }
+}

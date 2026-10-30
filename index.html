@@ -1,0 +1,281 @@
+---
+layout: default
+title: Edit
+app: true
+---
+
+<div class="app-wrap" id="app-wrap" data-panel="timeline">
+
+  <!-- ── Files ─────────────────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="scroll-y">
+      <div class="sidebar-section" id="files-section">
+        <div class="sidebar-section-title"><span>Files</span></div>
+
+        <div class="slot" id="slot-base" data-slot="base">
+          <div class="slot-head"><span class="slot-badge slot-badge-base">1</span><span class="slot-title">Base file</span></div>
+          <div class="slot-body" id="slot-base-body">
+            <p class="hint">The reference: its clock, laps and session are the workout's.</p>
+          </div>
+          <div class="btn-row slot-actions">
+            <button class="btn btn-sm" data-pick="base">Open .fit…</button>
+            <button class="btn btn-sm" data-clear="base" hidden>Remove</button>
+          </div>
+        </div>
+
+        <div class="slot" id="slot-second" data-slot="second">
+          <div class="slot-head"><span class="slot-badge slot-badge-second">2</span><span class="slot-title">Second file</span></div>
+          <div class="slot-body" id="slot-second-body">
+            <p class="hint">Optional. Channels to bring in by timestamp, or a ride to append.</p>
+          </div>
+          <div class="btn-row slot-actions">
+            <button class="btn btn-sm" data-pick="second">Open .fit…</button>
+            <button class="btn btn-sm" data-swap hidden title="Make this the base file">Swap</button>
+            <button class="btn btn-sm" data-clear="second" hidden>Remove</button>
+          </div>
+        </div>
+
+        <div class="dropzone" id="dropzone">
+          Drop <b>.fit</b> files here<br><span class="hint">the first is the base, the next the second file</span>
+        </div>
+        <input type="file" id="file-input" accept=".fit,.FIT" hidden>
+        <div class="btn-row" style="margin-top:8px">
+          <button class="btn btn-sm" id="demo-btn">Load sample files</button>
+        </div>
+        <div id="file-status"></div>
+      </div>
+
+      <div class="sidebar-section" id="icu-section">
+        <div class="sidebar-section-title"><span>intervals.icu</span></div>
+        <div id="icu-connect" style="display:none">
+          <a class="btn btn-primary icu-connect-cta" id="icu-connect-cta" href="{{ '/connect.html' | relative_url }}">Connect intervals.icu</a>
+          <p class="hint">Pull files straight from your activities, and upload the result back.</p>
+        </div>
+        <div id="icu-panel" style="display:none">
+          <p class="hint" style="margin-bottom:8px" id="icu-who"></p>
+          <div class="btn-row">
+            <button class="btn btn-sm" id="icu-fetch">Show recent activities</button>
+          </div>
+          <div id="icu-status"></div>
+          <div class="ride-list icu-list" id="icu-list"></div>
+          <details class="icu-byid">
+            <summary>Open by activity ID</summary>
+            <div class="inline-input" style="margin-top:6px">
+              <input type="text" id="icu-id" placeholder="i12345678" autocomplete="off" spellcheck="false">
+              <button class="btn btn-sm" id="icu-id-base">Base</button>
+              <button class="btn btn-sm" id="icu-id-second">2nd</button>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Timeline + map ────────────────────────────────────────────────── -->
+  <div class="center-area">
+    <div class="work-bar" id="work-bar">
+      <div class="work-stats" id="work-stats"><span class="hint">Open a .fit file to begin.</span></div>
+      <div class="btn-row work-history">
+        <button class="btn btn-sm" id="undo-btn" title="Undo (Ctrl+Z)" disabled>Undo</button>
+        <button class="btn btn-sm" id="redo-btn" title="Redo (Ctrl+Shift+Z)" disabled>Redo</button>
+        <button class="btn btn-sm" id="revert-btn" title="Back to the file as opened" disabled>Revert</button>
+      </div>
+    </div>
+    <div class="timeline-wrap" id="timeline-wrap">
+      <canvas id="timeline" class="timeline-canvas"></canvas>
+      <div class="empty-state" id="empty-state">
+        <div class="empty-title">Combine and fix FIT files</div>
+        <p>Open a base file, then a second recording of the same ride to bring its
+        power, heart rate or anything else across by timestamp. Or crop, cut, pause
+        and splice a single file.</p>
+      </div>
+    </div>
+    <div class="sel-bar" id="sel-bar">
+      <span class="sel-label">Selection</span>
+      <input type="text" id="sel-from" placeholder="from" autocomplete="off" spellcheck="false" aria-label="Selection start">
+      <span class="hint">to</span>
+      <input type="text" id="sel-to" placeholder="to" autocomplete="off" spellcheck="false" aria-label="Selection end">
+      <span class="hint sel-info" id="sel-info">Drag across the chart to select</span>
+      <button class="btn btn-sm" id="sel-clear" hidden>Clear</button>
+      <span class="header-spacer"></span>
+      <button class="btn btn-sm" id="zoom-sel" title="Zoom to the selection" hidden>Zoom to selection</button>
+      <button class="btn btn-sm" id="zoom-reset" title="Show the whole ride (double-click the chart)">Whole ride</button>
+    </div>
+    <div class="map-wrap" id="map-wrap">
+      <canvas id="trackmap" class="trackmap-canvas"></canvas>
+      <div class="map-legend hint" id="map-legend"></div>
+    </div>
+  </div>
+
+  <!-- ── Tools ─────────────────────────────────────────────────────────── -->
+  <aside class="rail">
+    <div class="scroll-y">
+      <div class="rail-section" id="tools-section">
+        <div class="seg tool-tabs" id="tool-tabs">
+          <button data-tab="merge" class="active">Merge</button>
+          <button data-tab="edit">Crop &amp; cut</button>
+          <button data-tab="splice">Splice</button>
+          <button data-tab="more">More</button>
+        </div>
+
+        <!-- Merge -->
+        <div class="tool-panel" data-panel="merge">
+          <p class="hint">Bring channels from the second file into the base, matched
+          second by second on the base file's clock.</p>
+          <div class="tool-need hint" id="merge-need">Open a second file to merge from.</div>
+          <div id="merge-body" hidden>
+            <div class="cue-grid" style="margin-top:8px">
+              <label for="offset">Clock offset</label>
+              <div class="inline-input">
+                <input type="number" id="offset" step="1" value="0">
+                <span class="unit-label">s</span>
+              </div>
+            </div>
+            <div class="btn-row nudge-row">
+              <button class="btn btn-sm" data-nudge="-10">−10</button>
+              <button class="btn btn-sm" data-nudge="-1">−1</button>
+              <button class="btn btn-sm" data-nudge="1">+1</button>
+              <button class="btn btn-sm" data-nudge="10">+10</button>
+              <button class="btn btn-sm" id="offset-auto" title="Line the two files up by cross-correlating a channel they share">Line up automatically</button>
+            </div>
+            <p class="hint" id="offset-note"></p>
+            <table class="data chan-table">
+              <thead><tr><th>Channel</th><th title="Share of base samples with this channel">Base</th><th title="Share of the second file's samples with it">2nd</th><th>Bring in</th></tr></thead>
+              <tbody id="chan-rows"></tbody>
+            </table>
+            <p class="hint" style="margin-top:6px"><b>Fill gaps</b> uses the second file only where the
+            base has nothing; <b>Replace</b> uses it wherever it has a value.</p>
+            <div class="btn-row" style="margin-top:8px">
+              <button class="btn btn-sm btn-primary" id="merge-btn">Merge</button>
+            </div>
+          </div>
+          <div id="merge-status"></div>
+        </div>
+
+        <!-- Crop & cut -->
+        <div class="tool-panel" data-panel="edit" hidden>
+          <p class="hint">Select a stretch on the chart (or type times below it), then:</p>
+          <div class="tool-list">
+            <div class="tool-item">
+              <button class="btn btn-sm" id="crop-btn" data-needs-sel>Crop to selection</button>
+              <span class="hint">Keep only the selection: trim a ride that started early or ran on.</span>
+            </div>
+            <div class="tool-item">
+              <button class="btn btn-sm" id="pause-btn" data-needs-sel>Pause the selection</button>
+              <span class="hint">As if auto-pause had been on: the samples go, the clock doesn't, and moving time leaves it out. The forgotten café stop.</span>
+              <label class="check"><input type="checkbox" id="pause-dist"><span>Also take out the distance covered</span></label>
+            </div>
+            <div class="tool-item">
+              <button class="btn btn-sm" id="cut-btn" data-needs-sel>Cut and close the gap</button>
+              <span class="hint">Remove the stretch and pull everything after it earlier, so the ride is continuous. A lift home you forgot to stop.</span>
+              <label class="check"><input type="checkbox" id="cut-dist" checked><span>Also take out the distance covered</span></label>
+            </div>
+            <div class="tool-item">
+              <button class="btn btn-sm" id="erase-btn" data-needs-sel>Delete the samples</button>
+              <span class="hint">Leave a hole: no pause, no time change. For a stretch of garbage data.</span>
+            </div>
+          </div>
+          <div class="tool-sub">
+            <div class="sidebar-section-title"><span>Shift the clock</span></div>
+            <div class="inline-input">
+              <input type="text" id="shift-by" placeholder="+1:00:00 or -30" autocomplete="off" spellcheck="false">
+              <button class="btn btn-sm" id="shift-btn">Shift</button>
+            </div>
+            <p class="hint" style="margin-top:4px">For a head unit with the wrong time or time zone. Moves every timestamp in the file.</p>
+          </div>
+          <div id="edit-status"></div>
+        </div>
+
+        <!-- Splice -->
+        <div class="tool-panel" data-panel="splice" hidden>
+          <p class="hint">Join the second file onto the end of the base as one workout: one session, both
+          files' laps, distance carrying on. For a ride split in two by a dead battery or a crash of the head unit.</p>
+          <div class="tool-need hint" id="splice-need">Open a second file to append.</div>
+          <div id="splice-body" hidden>
+            <label class="check"><input type="radio" name="splice-gap" value="keep" checked><span>Keep both files' real times; the gap becomes a pause</span></label>
+            <label class="check"><input type="radio" name="splice-gap" value="close"><span>Start the second file
+              <input type="number" id="splice-secs" min="1" value="1" style="width:64px"> s after the base ends</span></label>
+            <p class="hint" id="splice-note" style="margin-top:6px"></p>
+            <div class="btn-row" style="margin-top:8px">
+              <button class="btn btn-sm btn-primary" id="splice-btn">Append second file</button>
+            </div>
+          </div>
+          <div id="splice-status"></div>
+        </div>
+
+        <!-- More -->
+        <div class="tool-panel" data-panel="more" hidden>
+          <div class="tool-sub" style="margin-top:0;border-top:none;padding-top:0">
+            <div class="sidebar-section-title"><span>Remove channels</span></div>
+            <div id="strip-list" class="strip-list"></div>
+            <div class="btn-row" style="margin-top:6px">
+              <button class="btn btn-sm" id="strip-btn">Remove checked</button>
+            </div>
+            <p class="hint" style="margin-top:4px">Removing GPS also clears the start and end positions from the laps and session.</p>
+          </div>
+          <div class="tool-sub">
+            <div class="sidebar-section-title"><span>Clear spikes</span></div>
+            <div class="cue-grid">
+              <label for="clean-power">Power over</label>
+              <div class="inline-input"><input type="number" id="clean-power" min="100" step="50" placeholder="2000"><span class="unit-label">W</span></div>
+              <label for="clean-hr">HR over</label>
+              <div class="inline-input"><input type="number" id="clean-hr" min="100" step="5" placeholder="220"><span class="unit-label">bpm</span></div>
+            </div>
+            <label class="check"><input type="checkbox" id="clean-sel"><span>Only inside the selection</span></label>
+            <div class="btn-row" style="margin-top:6px">
+              <button class="btn btn-sm" id="clean-btn">Clear spikes</button>
+            </div>
+            <p class="hint" style="margin-top:4px">Values over the limit are blanked, not zeroed, so they don't drag averages down.</p>
+          </div>
+          <div class="tool-sub">
+            <div class="sidebar-section-title"><span>Sport</span></div>
+            <div class="inline-input">
+              <select id="sport-sel"></select>
+              <button class="btn btn-sm" id="sport-btn">Set</button>
+            </div>
+          </div>
+          <div class="tool-sub">
+            <div class="sidebar-section-title"><span>What's in the file</span></div>
+            <div id="file-info" class="hint"></div>
+          </div>
+          <div id="more-status"></div>
+        </div>
+      </div>
+
+      <div class="rail-section" id="history-section">
+        <div class="sidebar-section-title"><span>History</span></div>
+        <ol class="history-list" id="history-list"><li class="hint">Nothing yet</li></ol>
+      </div>
+
+      <div class="rail-section" id="export-section">
+        <div class="sidebar-section-title"><span>Save</span></div>
+        <input type="text" id="out-name" placeholder="file name" autocomplete="off" spellcheck="false" aria-label="Output file name">
+        <div class="btn-row" style="margin-top:8px">
+          <button class="btn btn-sm btn-primary" id="download-btn" disabled>Download .fit</button>
+          <button class="btn btn-sm" id="upload-btn" disabled hidden>Upload to intervals.icu</button>
+        </div>
+        <div id="export-status"></div>
+        <p class="hint" style="margin-top:6px">
+          Everything the base file carried is kept: device info, HRV, developer fields.
+          Laps and the session are recalculated from the samples after every edit.
+        </p>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<div class="busy-overlay" id="busy" hidden role="status" aria-live="polite">
+  <div class="busy-card">
+    <div class="busy-spinner" aria-hidden="true"></div>
+    <div>
+      <div class="busy-msg" id="busy-msg">Working…</div>
+      <div class="busy-sub" id="busy-sub"></div>
+    </div>
+  </div>
+</div>
+
+<nav class="mobile-nav">
+  <button class="mobile-tab" data-mpanel="files">Files</button>
+  <button class="mobile-tab active" data-mpanel="timeline">Ride</button>
+  <button class="mobile-tab" data-mpanel="tools">Tools</button>
+</nav>

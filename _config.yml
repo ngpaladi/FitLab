@@ -1,0 +1,18 @@
+title: FitLab
+description: Edit FIT activity files in the browser — merge two recordings into one, crop, cut, pause, splice
+baseurl: "/FitLab"
+url: "https://www.noahpaladino.com"
+
+plugins:
+  - jekyll-seo-tag
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - CLAUDE.md
+  - package.json
+  - package-lock.json
+  - node_modules/
+  - vendor/
+  - test/
